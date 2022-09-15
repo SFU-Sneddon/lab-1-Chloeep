@@ -9,7 +9,8 @@ output:
 
 ## Quick start
 
-*Click the Knit button in the panel above to convert this file to human-friendly HTML.* 
+*Click the Knit button in the panel above to convert this file to 
+human-friendly HTML.* 
 
 ### Learning Objectives
 

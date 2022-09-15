@@ -20,8 +20,8 @@ knitr::opts_chunk$set(echo = TRUE)
 The following code will ensure you have the necessary proxy settings in your ssh config. It also creates a symbolic link (like a shortcut) to the directory that contains the course files. If this is nonsense to you, don't worry about it and just read on. *If you are running this file for the second+ time, then you need to comment out these lines by adding # at the start of both of them.*
 
 ```{bash}
-mkdir ~/MBB243/
-ln -s /local-scratch/course_files/MBB243/ ~/files
+#mkdir ~/MBB243/
+#ln -s /local-scratch/course_files/MBB243/ ~/files
 ```
 
 The first run of the code chunk above (or the first time you knit this document) should automatically generate a link to the folder that contains all of the files required for our course this semester. You don't have to worry about what this is doing, but we do need this section in here for the first run.
@@ -46,12 +46,14 @@ Each RStudio user is given a home directory on the course server under `/localho
 Add R code and Bash code to the two empty code blocks below, respectively, to print out your current working directory. Add a comment to one of the code blocks that is just the full path to your home directory similar to the examples above.
 
 ```{r}
-
+getwd()
 ```
 
 ```{bash, engine.opts='-l'}
-
+pwd
 ```
+## /local-scratch/localhome/chloep/lab-1-Chloeep
+
 ## Other extremely useful bash commands
 
 |Bash Command|Effect|
@@ -73,8 +75,10 @@ Let's revisit some of the commands you saw used in class individually. The code 
 
 **Task** 
 * Duplicate the last line in this code chunk and modify it by replacing the single `>` with `>>`. What happens when you rerun it? 
+Answer: Creates a folder called "genotype_head.txt". Also '>>" appends the data to the end of the file while '>' wipes out the initial data and writes over
 
 * What happens if you change the output file name (after `>>`) to `~/MBB243/out/genotype_head.txt`? Why do you think that is?
+Answer: Error - No directory or file called "out"
 
 ```{bash, engine.opts='-l'}
 head -n 25 /local-scratch/course_files/MBB243/Sneddon_genotypes.txt
@@ -84,11 +88,17 @@ head -n 25 /local-scratch/course_files/MBB243/Sneddon_genotypes.txt
 # the last bit is the full path to the file we want to use as input for the head command
 # You can save the output you see by "redirecting" STDOUT to a file. 
 
-head -n 25 /local-scratch/course_files/MBB243/Sneddon_genotypes.txt > ~/MBB243/genotype_head.txt
+head -n 25 /local-scratch/course_files/MBB243/Sneddon_genotypes.txt> ~/MBB243/genotype_head.txt
 
 ```
 
 You should have a few lines of genotype information in a new file named `~/MBB243/genotype_head.txt`. Do you notice any genotypes in there that look "off"? Assuming we wanted to sanity check this whole file for what genotypes exist, we can use a combination the `cut`, `uniq` and `sort` commands (uniq is dumb and only works properly if its input is sorted). The code chunk below does this but uses our smaller file as input for efficiency. The result should be all unique genotypes in that file. What did we do wrong? 
+
+Answer: "--" is not a genotype, but is included. To solve this, pipe the output to command 'grep -v "\-\-"'
+
+Cut -f 4 = returns the data in the fourth column
+Sort = Sorts the data into alphabetical order
+Uniq = returns data frame without duplicates
 
 ```{bash, engine.opts='-l'}
 cut -f 4 ~/MBB243/genotype_head.txt | sort | uniq
@@ -131,6 +141,8 @@ Many things you do in the bash terminal are "one-off" commands that wouldn't mak
 
 Run the following code chunk once then use the RStudio terminal (not the Console) to find and view the contents of that file. If you have already "knit" the document then the code has been run. The `cat` command will dump the contents of any file to your terminal and is a convenient way to look at the contents of a file. For larger files, it's better to use either `head` to view the first few lines or `tail` to view the last few. What changes in the file if you manually run the code chunk a few more times?
 
+Answer: Each time I run the file, the phrase "Hello terminal!" and the date is added to the pre-existing content of the same file
+
 ```{bash}
 echo "Hello terminal!" >> EMPTY.txt
 echo $(date) >> EMPTY.txt
@@ -140,7 +152,9 @@ echo $(date) >> EMPTY.txt
 
 **Task:**
 
-Make a copy of the code chunk above and put it below this text in your version of the Rmd file. Modify the code so it instead creates a file with this exact name: `~/.bash_profile`. *General hint*: when you can, use copy/paste so you don't have to re-type a command or file name. You also need to change the code chunk to add a single line to the new file. The first line of text should be:
+Make a copy of the code chunk above and put it below this text in your version of the Rmd file. Modify the code so it instead creates a file with this exact name:
+
+`~/.bash_profile`. *General hint*: when you can, use copy/paste so you don't have to re-type a command or file name. You also need to change the code chunk to add a single line to the new file. The first line of text should be:
 
 `source ~/.bashrc`
 
@@ -152,7 +166,11 @@ Be careful here with the distinction between `>` and `>>`. The code should only 
 
 `cat ~/.bash_profile`
 
-**DELETE THIS TEXT AND PUT YOUR NEW CODE CHUNK HERE**
+
+```{bash}
+echo "Hello terminal!" > ~/.bash_profile
+echo source ~/.bashrc $'\n'DATA=/local-scratch/course_files/MBB243/ > ~/.bash_profile
+```
 
 ## Setting a variable in R
 
@@ -231,17 +249,16 @@ To run Python code we always need to ensure we've loaded the `reticulate` R pack
 
 **Task** Set eval=TRUE in the two chunks below and run them (in order!).
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 library(reticulate)
-use_python("miniconda3/bin/python")
+use_python("~/miniconda3/bin/python")
 use_condaenv("base")
-
 ```
 
 The next code block simply prints the path to the python executable that is used and then loads and tests some functionality provided by the BioPython library. 
 
-```{python, eval=FALSE}
-
+```{python, eval=TRUE}
+import sys
 sys.executable
 from Bio.Seq import Seq
 my_seq = Seq("AGTACACTGGT")
@@ -264,7 +281,13 @@ conda install -c bioconda samtools
 
 The human reference genome in fasta format can be found in the lab data directory, specifically ` /local-scratch/course_files/MBB243/hg38.fa`. Using what you learned in lecture, construct a command that uses samtools to extract the sequence from this region: `chr14:65102304-65102339` and store the sequence as a variable. Note that we don't want to store the "header" (starts with `>`). Construct this code in the code chunk below. Your code chunk should end with an `echo` command that prints the contents of your new variable.
 
+```{bash}
+echo $(samtools faidx /local-scratch/course_files/MBB243/hg38.fa chr14:65102304-65102339 | grep -v \> > optional_task.txt)
+```
+
 Think about how you might make this code output to a file instead of just to the terminal. How might this be useful? 
+
+By making this code output a set of nucleotides into a file, I can easily retrieve this set of nucelotide by assigning a variable to the file context. so in the future, I don't have to write out the whole code to refer to the sequence, instead, I can just use the variable that was assigned. 
 
 ## Lab Completion Checklist
 **Task**
@@ -273,7 +296,7 @@ At the end of every lab, replace TODO with DONE to the left of each task to indi
 |status|task|
 |-|-|
 |DONE|This file has been knit|
-|TODO| My .bashrc file exists|
-|TODO| Miniconda is installed|
-|TODO| I was able to install both Bioconda and samtools using conda|
-|TODO| The last few code chunks that run Python code run without errors when I knit this document|
+|DONE| My .bashrc file exists|
+|DONE| Miniconda is installed|
+|DONE| I was able to install both Bioconda and samtools using conda|
+|DONE| The last few code chunks that run Python code run without errors when I knit this document|
