@@ -75,7 +75,7 @@ Let's revisit some of the commands you saw used in class individually. The code 
 
 **Task** 
 * Duplicate the last line in this code chunk and modify it by replacing the single `>` with `>>`. What happens when you rerun it? 
-Answer: Creates a folder called "genotype_head.txt". Also '>>" appends the data to the end of the file while '>' wipes out the initial data and writes over
+Answer: Creates a folder called "genotype_head.txt". Also '>>" appends the data to the end of the contents of the file while '>' wipes out the initial data and writes over
 
 * What happens if you change the output file name (after `>>`) to `~/MBB243/out/genotype_head.txt`? Why do you think that is?
 Answer: Error - No directory or file called "out"
